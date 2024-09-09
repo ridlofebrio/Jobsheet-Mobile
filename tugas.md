@@ -1,3 +1,7 @@
+### Soal 1 <br>
+Hasil <br>
+![alt text](image.png)
+
 ### Soal 2 <br>
 Mengapa sangat penting untuk memahami bahasa pemrograman Dart sebelum kita menggunakan framework Flutter ? Jelaskan!
 <br><br>
