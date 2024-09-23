@@ -378,19 +378,46 @@ last
 2. Jelaskan jenis-jenis parameter di Functions beserta contoh sintaksnya!<br>
     jawaban : 
     Positional Parameter: Diakses berdasarkan urutan. Named Parameter: Dapat dipanggil berdasarkan nama, opsional jika diberi kurung kurawal.Optional Positional Parameter: Opsional, tidak wajib disertakan saat pemanggilan.
+```dart
+void printMessage() => print("Hello");
+var myFunction = printMessage;
+myFunction(); // Memanggil fungsi yang disimpan
+```
 
 3. Jelaskan maksud Functions sebagai first-class objects beserta contoh sintaknya!<br>
 jawaban : Functions di Dart dianggap sebagai first-class objects, artinya bisa disimpan dalam variabel, dikembalikan dari fungsi lain, atau diteruskan sebagai argumen.
+```dart
+var list = ['apple', 'banana', 'cherry'];
+list.forEach((item) { print(item); });
+```
 
 4. Apa itu Anonymous Functions? Jelaskan dan berikan contohnya!<br>
 jawaban : Anonymous functions adalah fungsi tanpa nama, sering digunakan dalam fungsi yang membutuhkan callback.
 
+```dart
+int a = 5;
+void printA() { print(a); } // Bisa akses variabel 'a'
+```
+
 5. Jelaskan perbedaan Lexical scope dan Lexical closures! Berikan contohnya!<br>
 jawaban : Lexical Scope: Variabel dalam fungsi dapat diakses dari dalam fungsi yang bersarang.Lexical Closure: Fungsi bersarang dapat "menangkap" variabel dari fungsi luarnya, bahkan setelah fungsi luar selesai dieksekusi.
+```dart
+Function outer() {
+  int x = 7;
+  return () => print(x); // Fungsi ini "menangkap" variabel x
+}
+var inner = outer();
+inner(); // Mencetak 7 meskipun outer sudah selesai
+```
 
 6. Jelaskan dengan contoh cara membuat return multiple value di Functions!<br>
 jawaban : Dart tidak mendukung return multiple values secara langsung, namun bisa menggunakan tuples atau objek seperti Map atau List.
-
+```dart
+(int, String) getDetails() {
+  return (1, 'Alice');
+}
+var (id, name) = getDetails();
+```
 
 
 
