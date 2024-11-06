@@ -1,4 +1,4 @@
-package com.example.belanja
+package com.example.kamera_flutter
 
 import io.flutter.embedding.android.FlutterActivity
 
