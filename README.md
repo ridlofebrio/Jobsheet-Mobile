@@ -351,9 +351,11 @@ Widget _buildList(Plan plan) {
 
 2. Jelaskan mana yang dimaksud InheritedWidget pada langkah 1 tersebut! Mengapa yang digunakan InheritedNotifier?
    <br> Jawaban :Inhertied Widget Digunakan untuk menyediakan data, sehingga data bisa di akses ke widget child.<br>Inherited Notifiee Digunakan untuk me- listen sebuah objek yang ketika objek itu berubah maka, akan melakukan rebuild widget sehingga data sesuai.
-3. Jelaskan maksud dari method di langkah 3 pada praktikum tersebut! Mengapa dilakukan demikian?
+   
+4. Jelaskan maksud dari method di langkah 3 pada praktikum tersebut! Mengapa dilakukan demikian?
+   Jawaban :Variabel plan Digunakan untuk menyimpan data rencana (plan) yang terdiri dari nama dan daftar tugas (tasks). Variabel plan dibuat sebagai konstanta untuk memastikan bahwa objek Plan yang diinisialisasi tidak dapat diubah setelah dibuat
 
-4. Lakukan capture hasil dari Langkah 9 berupa GIF, kemudian jelaskan apa yang telah Anda buat!
+5. Lakukan capture hasil dari Langkah 9 berupa GIF, kemudian jelaskan apa yang telah Anda buat!
    ![alt text](img/gif2.gif)
 
 # Praktikum 3
