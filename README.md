@@ -1,491 +1,624 @@
 # Praktikum 1
 
-1. Buat Project Baru <br>
-   Buatlah sebuah project flutter baru dengan nama kamera_flutter, lalu sesuaikan style laporan praktikum yang Anda buat.
-2. Langkah 2: Tambah dependensi yang diperlukan <br>
-   Anda memerlukan tiga dependensi pada project flutter untuk menyelesaikan praktikum ini.<br>camera → menyediakan seperangkat alat untuk bekerja dengan kamera pada device..<br>path_provider → menyediakan lokasi atau path untuk menyimpan hasil foto..<br>path → membuat path untuk mendukung berbagai platform.
-
-Untuk menambahkan dependensi plugin, jalankan perintah flutter pub add seperti berikut di terminal:
-
-```
-flutter pub add camera path_provider path
-```
-
-3. Ambil Sensor Kamera dari device <br>
-   Selanjutnya, kita perlu mengecek jumlah kamera yang tersedia pada perangkat menggunakan plugin camera seperti pada kode berikut ini. Kode ini letakkan dalam void main().
+1. Membuat model task.dart<br>
+   Class ini memiliki atribut description dengan tipe data String dan complete dengan tipe data Boolean, serta ada konstruktor. Kelas ini akan menyimpan data tugas untuk aplikasi kita. Tambahkan kode berikut:
 
 ```dart
+class Task {
+ final String description;
+ final bool complete;
 
-late CameraDescription firstCamera;
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final cameras = await availableCameras();
-  firstCamera = cameras.first;
-
-  runApp(
-    MaterialApp(
-      theme: ThemeData.dark(),
-      home: TakePictureScreen(
-        camera: firstCamera,
-      ),
-      debugShowCheckedModeBanner: false,
-    ),
-  );
+ const Task({
+   this.complete = false,
+   this.description = '',
+ });
 }
-
 ```
 
-4. Buat dan inisialisasi CameraController<br>
-   Setelah Anda dapat mengakses kamera, gunakan langkah-langkah berikut untuk membuat dan menginisialisasi CameraController. Pada langkah berikut ini, Anda akan membuat koneksi ke kamera perangkat yang memungkinkan Anda untuk mengontrol kamera dan menampilkan pratinjau umpan kamera.<br><br>
-   Anda dapat menggunakan CameraController untuk mengambil gambar menggunakan metode takePicture(), yang mengembalikan objek XFile, merupakan sebuah objek abstraksi File lintas platform yang disederhanakan. Pada Android dan iOS, gambar baru disimpan dalam direktori cache masing-masing, dan path ke lokasi tersebut dikembalikan dalam XFile.
+2.  Buat file plan.dart<br>
+    Kita juga perlu sebuah List untuk menyimpan daftar rencana dalam aplikasi to-do ini. Buat file plan.dart di dalam folder models
 
 ```dart
-// A screen that allows users to take a picture using a given camera.
-class TakePictureScreen extends StatefulWidget {
-  const TakePictureScreen({
-    super.key,
-    required this.camera,
-  });
+import './task.dart';
 
-  final CameraDescription camera;
+class Plan {
+ final String name;
+ final List<Task> tasks;
 
-  @override
-  TakePictureScreenState createState() => TakePictureScreenState();
-}
-
-class TakePictureScreenState extends State<TakePictureScreen> {
-  late CameraController _controller;
-  late Future<void> _initializeControllerFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    // To display the current output from the Camera,
-    // create a CameraController.
-    _controller = CameraController(
-      // Get a specific camera from the list of available cameras.
-      widget.camera,
-      // Define the resolution to use.
-      ResolutionPreset.medium,
-    );
-
-    // Next, initialize the controller. This returns a Future.
-    _initializeControllerFuture = _controller.initialize();
-  }
-
-  @override
-  void dispose() {
-    // Dispose of the controller when the widget is disposed.
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Fill this out in the next steps.
-    return Container();
-  }
+ const Plan({this.name = '', this.tasks = const []});
 }
 ```
 
-5.  Gunakan CameraPreview untuk menampilkan preview foto <br>
+3.  Buat file data_layer.dart<br>
+    Kita dapat membungkus beberapa data layer ke dalam sebuah file yang nanti akan mengekspor kedua model tersebut. Dengan begitu, proses impor akan lebih ringkas seiring berkembangnya aplikasi. Buat file bernama data_layer.dart
 
 ```dart
-
-class DisplayPictureScreen extends StatelessWidget {
-  final String imagePath;
-
-  const DisplayPictureScreen({super.key, required this.imagePath});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Display the Picture - NIM Anda')),
-      body: Image.file(File(imagePath)),
-    );
-  }
-}
+export 'plan.dart';
+export 'task.dart';
 ```
 
-6. Ambil foto dengan CameraController<br>
-   Anda dapat menggunakan CameraController untuk mengambil gambar menggunakan metode takePicture(), yang mengembalikan objek XFile, merupakan sebuah objek abstraksi File lintas platform yang disederhanakan. Pada Android dan iOS, gambar baru disimpan dalam direktori cache masing-masing, dan path ke lokasi tersebut dikembalikan dalam XFile.
-
-```dart
-FloatingActionButton(
-  // Provide an onPressed callback.
-  onPressed: () async {
-    // Take the Picture in a try / catch block. If anything goes wrong,
-    // catch the error.
-    try {
-      // Ensure that the camera is initialized.
-      await _initializeControllerFuture;
-
-      // Attempt to take a picture and then get the location
-      // where the image file is saved.
-      final image = await _controller.takePicture();
-    } catch (e) {
-      // If an error occurs, log the error to the console.
-      print(e);
-    }
-  },
-  child: const Icon(Icons.camera_alt),
-)
-```
-
-7. Buat widget baru DisplayPictureScreen<br>
-   Buatlah file baru pada folder widget yang berisi kode berikut.
-
-```dart
-// A widget that displays the picture taken by the user.
-class DisplayPictureScreen extends StatelessWidget {
-  final String imagePath;
-
-  const DisplayPictureScreen({super.key, required this.imagePath});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Display the Picture - NIM Anda')),
-      // The image is stored as a file on the device. Use the `Image.file`
-      // constructor with the given path to display the image.
-      body: Image.file(File(imagePath)),
-    );
-  }
-}
-```
-
-8.  Menampilkan hasil foto <br>
-    Tambahkan kode seperti berikut pada bagian try / catch agar dapat menampilkan hasil foto pada DisplayPictureScreen.
-
-```dart
-   // If the picture was taken, display it on a new screen.
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => DisplayPictureScreen(
-                  // Pass the automatically generated path to
-                  // the DisplayPictureScreen widget.
-                  imagePath: image.path,
-                ),
-              ),
-            );
-```
-
-Hasil :
-![alt text](img/image.png)
-![alt text](img/image-1.png)
-
-# Praktikum 2
-
-1. Buatlah folder widget dan file baru yang berisi kode berikut.
-
-```dart
-@immutable
-class FilterSelector extends StatefulWidget {
-  const FilterSelector({
-    super.key,
-    required this.filters,
-    required this.onFilterChanged,
-    this.padding = const EdgeInsets.symmetric(vertical: 24),
-  });
-
-  final List<Color> filters;
-  final void Function(Color selectedColor) onFilterChanged;
-  final EdgeInsets padding;
-
-  @override
-  State<FilterSelector> createState() => _FilterSelectorState();
-}
-
-class _FilterSelectorState extends State<FilterSelector> {
-  static const _filtersPerScreen = 5;
-  static const _viewportFractionPerItem = 1.0 / _filtersPerScreen;
-
-  late final PageController _controller;
-  late int _page;
-
-  int get filterCount => widget.filters.length;
-
-  Color itemColor(int index) => widget.filters[index % filterCount];
-
-  @override
-  void initState() {
-    super.initState();
-    _page = 0;
-    _controller = PageController(
-      initialPage: _page,
-      viewportFraction: _viewportFractionPerItem,
-    );
-    _controller.addListener(_onPageChanged);
-  }
-
-  void _onPageChanged() {
-    final page = (_controller.page ?? 0).round();
-    if (page != _page) {
-      _page = page;
-      widget.onFilterChanged(widget.filters[page]);
-    }
-  }
-
-  void _onFilterTapped(int index) {
-    _controller.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 450),
-      curve: Curves.ease,
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scrollable(
-      controller: _controller,
-      axisDirection: AxisDirection.right,
-      physics: const PageScrollPhysics(),
-      viewportBuilder: (context, viewportOffset) {
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final itemSize = constraints.maxWidth * _viewportFractionPerItem;
-            viewportOffset
-              ..applyViewportDimension(constraints.maxWidth)
-              ..applyContentDimensions(0.0, itemSize * (filterCount - 1));
-
-            return Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                _buildShadowGradient(itemSize),
-                _buildCarousel(
-                  viewportOffset: viewportOffset,
-                  itemSize: itemSize,
-                ),
-                _buildSelectionRing(itemSize),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildShadowGradient(double itemSize) {
-    return SizedBox(
-      height: itemSize * 2 + widget.padding.vertical,
-      child: const DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              Colors.black,
-            ],
-          ),
-        ),
-        child: SizedBox.expand(),
-      ),
-    );
-  }
-
-  Widget _buildCarousel({
-    required ViewportOffset viewportOffset,
-    required double itemSize,
-  }) {
-    return Container(
-      height: itemSize,
-      margin: widget.padding,
-      child: Flow(
-        delegate: CarouselFlowDelegate(
-          viewportOffset: viewportOffset,
-          filtersPerScreen: _filtersPerScreen,
-        ),
-        children: [
-          for (int i = 0; i < filterCount; i++)
-            FilterItem(
-              onFilterSelected: () => _onFilterTapped(i),
-              color: itemColor(i),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSelectionRing(double itemSize) {
-    return IgnorePointer(
-      child: Padding(
-        padding: widget.padding,
-        child: SizedBox(
-          width: itemSize,
-          height: itemSize,
-          child: const DecoratedBox(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.fromBorderSide(
-                BorderSide(width: 6, color: Colors.white),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-```
-
-2. Buat widget photo filter carousel
-
-```dart
-@immutable
-class PhotoFilterCarousel extends StatefulWidget {
-  const PhotoFilterCarousel({super.key});
-
-  @override
-  State<PhotoFilterCarousel> createState() => _PhotoFilterCarouselState();
-}
-
-class _PhotoFilterCarouselState extends State<PhotoFilterCarousel> {
-  final _filters = [
-    Colors.white,
-    ...List.generate(
-      Colors.primaries.length,
-      (index) => Colors.primaries[(index * 4) % Colors.primaries.length],
-    )
-  ];
-
-  final _filterColor = ValueNotifier<Color>(Colors.white);
-
-  void _onFilterChanged(Color value) {
-    _filterColor.value = value;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.black,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: _buildPhotoWithFilter(),
-          ),
-          Positioned(
-            left: 0.0,
-            right: 0.0,
-            bottom: 0.0,
-            child: _buildFilterSelector(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPhotoWithFilter() {
-    return ValueListenableBuilder(
-      valueListenable: _filterColor,
-      builder: (context, color, child) {
-        // Anda bisa ganti dengan foto Anda sendiri
-        return Image.network(
-          'https://docs.flutter.dev/cookbook/img-files'
-          '/effects/instagram-buttons/millennial-dude.jpg',
-          color: color.withOpacity(0.5),
-          colorBlendMode: BlendMode.color,
-          fit: BoxFit.cover,
-        );
-      },
-    );
-  }
-
-  Widget _buildFilterSelector() {
-    return FilterSelector(
-      onFilterChanged: _onFilterChanged,
-      filters: _filters,
-    );
-  }
-}
-```
-
-3. Membuat filter warna
+4. Pindah ke file main.dart<br>
+   Ubah isi kode main.dart sebagai berikut.
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'dart:math' as math;
+import './views/plan_screen.dart';
 
-class CarouselFlowDelegate extends FlowDelegate {
-  CarouselFlowDelegate({
-    required this.viewportOffset,
-    required this.filtersPerScreen,
-  }) : super(repaint: viewportOffset);
+void main() => runApp(MasterPlanApp());
 
-  final ViewportOffset viewportOffset;
-  final int filtersPerScreen;
+class MasterPlanApp extends StatelessWidget {
+  const MasterPlanApp({super.key});
 
   @override
-  void paintChildren(FlowPaintingContext context) {
-    final count = context.childCount;
-
-    // All available painting width
-    final size = context.size.width;
-
-    // The distance that a single item "page" takes up from the perspective
-    // of the scroll paging system. We also use this size for the width and
-    // height of a single item.
-    final itemExtent = size / filtersPerScreen;
-
-    // The current scroll position expressed as an item fraction, e.g., 0.0,
-    // or 1.0, or 1.3, or 2.9, etc. A value of 1.3 indicates that item at
-    // index 1 is active, and the user has scrolled 30% towards the item at
-    // index 2.
-    final active = viewportOffset.pixels / itemExtent;
-
-    // Index of the first item we need to paint at this moment.
-    // At most, we paint 3 items to the left of the active item.
-    final min = math.max(0, active.floor() - 3).toInt();
-
-    // Index of the last item we need to paint at this moment.
-    // At most, we paint 3 items to the right of the active item.
-    final max = math.min(count - 1, active.ceil() + 3).toInt();
-
-    // Generate transforms for the visible items and sort by distance.
-    for (var index = min; index <= max; index++) {
-      final itemXFromCenter = itemExtent * index - viewportOffset.pixels;
-      final percentFromCenter = 1.0 - (itemXFromCenter / (size / 2)).abs();
-      final itemScale = 0.5 + (percentFromCenter * 0.5);
-      final opacity = 0.25 + (percentFromCenter * 0.75);
-
-      final itemTransform = Matrix4.identity()
-        ..translate((size - itemExtent) / 2)
-        ..translate(itemXFromCenter)
-        ..translate(itemExtent / 2, itemExtent / 2)
-        ..multiply(Matrix4.diagonal3Values(itemScale, itemScale, 1.0))
-        ..translate(-itemExtent / 2, -itemExtent / 2);
-
-      context.paintChild(
-        index,
-        transform: itemTransform,
-        opacity: opacity,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CarouselFlowDelegate oldDelegate) {
-    return oldDelegate.viewportOffset != viewportOffset;
+  Widget build(BuildContext context) {
+    return MaterialApp(
+     theme: ThemeData(primarySwatch: Colors.purple),
+     home: PlanScreen(),
+    );
   }
 }
 ```
 
-![alt text](img/image2.png)
+5. buat plan_screen.dart<br>
+   Pada folder views, buatlah sebuah file plan_screen.dart dan gunakan templat StatefulWidget untuk membuat class PlanScreen
 
-# Tugas Praktikum
+```dart
+import '../models/data_layer.dart';
+import 'package:flutter/material.dart';
 
-1. Gabungkan hasil praktikum 1 dengan hasil praktikum 2 sehingga setelah melakukan pengambilan foto, dapat dibuat filter carouselnya!
-   <br><br>
-2. Jelaskan maksud void async pada praktikum 1?<br>
-   async: Kata kunci async digunakan untuk menandai bahwa sebuah fungsi adalah asynchronous atau tidak berjalan secara langsung (synchronous). Fungsi dengan async memungkinkan penggunaan await di dalamnya, yang berguna untuk menunggu operasi asynchronous (misalnya pengambilan data dari internet, membaca file, dll) selesai tanpa menghalangi jalannya program utama.
-   Jadi, void async menunjukkan fungsi asynchronous yang tidak mengembalikan nilai apa pun.<br><br>
-3. Jelaskan fungsi dari anotasi @immutable dan @override ?<br>
-   Anotasi @immutable digunakan untuk menandai bahwa semua properti dari suatu kelas tidak dapat diubah (immutable) setelah objek kelas tersebut dibuat. Anotasi ini biasanya digunakan pada kelas yang merupakan subclass dari StatelessWidget dalam Flutter.
-   Ketika kelas diberi anotasi @immutable, semua properti di dalamnya harus diberi nilai sekali (biasanya pada konstruktor) dan tidak boleh diubah lagi. Hal ini membantu mencegah perubahan tidak sengaja pada objek, yang penting dalam pola desain aplikasi yang lebih aman dan predictable.
+class PlanScreen extends StatefulWidget {
+  const PlanScreen({super.key});
+
+  @override
+  State createState() => _PlanScreenState();
+}
+
+class _PlanScreenState extends State<PlanScreen> {
+  Plan plan = const Plan();
+
+  @override
+  Widget build(BuildContext context) {
+   return Scaffold(
+    // ganti ‘Namaku' dengan Nama panggilan Anda
+    appBar: AppBar(title: const Text('Master Plan Namaku')),
+    body: _buildList(),
+    floatingActionButton: _buildAddTaskButton(),
+   );
+  }
+}
+```
+
+6.  buat method \_buildAddTaskButton()<br>
+    Anda akan melihat beberapa error di langkah 6, karena method yang belum dibuat. Ayo kita buat mulai dari yang paling mudah yaitu tombol Tambah Rencana. Tambah kode berikut di bawah method build di dalam class \_PlanScreenState.
+
+```dart
+Widget _buildAddTaskButton() {
+  return FloatingActionButton(
+   child: const Icon(Icons.add),
+   onPressed: () {
+     setState(() {
+      plan = Plan(
+       name: plan.name,
+       tasks: List<Task>.from(plan.tasks)
+       ..add(const Task()),
+     );
+    });
+   },
+  );
+}
+```
+
+7. buat widget \_buildList() <br>
+   Kita akan buat widget berupa List yang dapat dilakukan scroll, yaitu ListView.builder. Buat widget ListView seperti kode berikut ini.
+
+```dart
+Widget _buildList() {
+  return ListView.builder(
+   itemCount: plan.tasks.length,
+   itemBuilder: (context, index) =>
+   _buildTaskTile(plan.tasks[index], index),
+  );
+}
+```
+
+8.  buat widget \_buildTaskTile<br>
+    Dari langkah 8, kita butuh ListTile untuk menampilkan setiap nilai dari plan.tasks. Kita buat dinamis untuk setiap index data, sehingga membuat view menjadi lebih mudah
+
+```dart
+ Widget _buildTaskTile(Task task, int index) {
+    return ListTile(
+      leading: Checkbox(
+          value: task.complete,
+          onChanged: (selected) {
+            setState(() {
+              plan = Plan(
+                name: plan.name,
+                tasks: List<Task>.from(plan.tasks)
+                  ..[index] = Task(
+                    description: task.description,
+                    complete: selected ?? false,
+                  ),
+              );
+            });
+          }),
+      title: TextFormField(
+        initialValue: task.description,
+        onChanged: (text) {
+          setState(() {
+            plan = Plan(
+              name: plan.name,
+              tasks: List<Task>.from(plan.tasks)
+                ..[index] = Task(
+                  description: text,
+                  complete: task.complete,
+                ),
+            );
+          });
+        },
+      ),
+    );
+  }
+```
+
+9. Tambah Scroll Controller<br>
+   Anda dapat menggunakan ScrollController untuk menghapus focus dari semua TextField selama event scroll dilakukan. Pada file plan_screen.dart, tambahkan variabel scroll controller di class State tepat setelah variabel plan
+
+```dart
+late ScrollController scrollController;
+```
+
+10. Tambah Scroll Listener<br>
+    Tambahkan method initState() setelah deklarasi variabel scrollController seperti kode berikut.
+
+```dart
+@override
+void initState() {
+  super.initState();
+  scrollController = ScrollController()
+    ..addListener(() {
+      FocusScope.of(context).requestFocus(FocusNode());
+    });
+}
+```
+
+11. Tambah controller dan keyboard behavior
+
+```dart
+return ListView.builder(
+  controller: scrollController,
+ keyboardDismissBehavior: Theme.of(context).platform ==
+ TargetPlatform.iOS
+          ? ScrollViewKeyboardDismissBehavior.onDrag
+          : ScrollViewKeyboardDismissBehavior.manual,
+```
+
+12. Terakhir, tambah method dispose()
+    ![alt text](img\image.png)
+
+# Tugas Praktikum 1
+
+2. Jelaskan maksud dari langkah 4 pada praktikum tersebut! Mengapa dilakukan demikian<br>
+   Jawaban : Untuk melakukan eksport pada models, sehingga proses import hanya dilakukan sekali pada views
+3. Mengapa perlu variabel plan di langkah 6 pada praktikum tersebut? Mengapa dibuat konstanta ?<br>
+   Jawaban : Agar objek tidak dapat diubah lagi setelah pendeklarasian objek, sehingga pada tahap2 selanjutnya proses menjadi duplikasi objek baru.
+4. Lakukan capture hasil dari Langkah 9 berupa GIF, kemudian jelaskan apa yang telah Anda buat!
+   <br>
+   ![alt text](<img/Android Emulator - Pixel_6a_API_35_5554 2024-11-09 21-41-06.gif>)
+   <br> Jawaban : membentuk sebuah listile yang didasarkan pada jumlah task pada plan, pada set state checkbox apa bila terjadi perubahan checkbox maka variabel pada task boolean menjadi true atau false. semua perubahan akan terjadi pada variabel plan, sehinga terjadi perubahan secara terus menerus pada variabel plan
+5. Apa kegunaan method pada Langkah 11 dan 13 dalam lifecyle state ?<br> Jawaban :
+   ScrollListener digunakan apabila, tampilan melebihi batasan device maka akan dilakukan listener pada scroll seperti fokus.
+
+# Praktikum 2
+
+1.  Buat file plan_provider.dart
+
+```dart
+import 'package:flutter/material.dart';
+import '../models/data_layer.dart';
+
+class PlanProvider extends InheritedNotifier<ValueNotifier<Plan>> {
+  const PlanProvider({super.key, required Widget child, required
+   ValueNotifier<Plan> notifier})
+  : super(child: child, notifier: notifier);
+
+  static ValueNotifier<Plan> of(BuildContext context) {
+   return context.
+    dependOnInheritedWidgetOfExactType<PlanProvider>()!.notifier!;
+  }
+}
+```
+
+2. Edit main.dart<br>
+   Gantilah pada bagian atribut home dengan PlanProvider
+
+```dart
+return MaterialApp(
+  theme: ThemeData(primarySwatch: Colors.purple),
+  home: PlanProvider(
+    notifier: ValueNotifier<Plan>(const Plan()),
+    child: const PlanScreen(),
+   ),
+);
+```
+
+3. Tambah method pada model plan.dart
+   <br>Tambahkan dua method di dalam model class Plan
+
+```dart
+int get completedCount => tasks
+  .where((task) => task.complete)
+  .length;
+
+String get completenessMessage =>
+  '$completedCount out of ${tasks.length} tasks';
+```
+
+4.  Pindah ke PlanScreen
+    <br> Edit PlanScreen agar menggunakan data dari PlanProvider. Hapus deklarasi variabel plan (ini akan membuat error). Kita akan perbaiki pada langkah 5 berikut ini.
+
+5.  Edit method \_buildAddTaskButton
+
+```dart
+Widget _buildAddTaskButton() {
+    return FloatingActionButton(
+      child: const Icon(Icons.add),
+      onPressed: () {
+        setState(() {
+          Plan currentPlan = plantNotifier.value;
+          plantNotifier.value = Plan(
+            name: currentPlan.name,
+            tasks: List<Task>.from(currentPlan.tasks)
+              ..add(const Task(description: '', complete: false)),
+          );
+        });
+      },
+    );
+  }
+```
+
+6. Edit method \_buildTaskTile
+
+```dart
+Widget _buildTaskTile(Task task, int index, BuildContext context) {
+  ValueNotifier<Plan> planNotifier = PlanProvider.of(context);
+  return ListTile(
+    leading: Checkbox(
+       value: task.complete,
+       onChanged: (selected) {
+         Plan currentPlan = planNotifier.value;
+         planNotifier.value = Plan(
+           name: currentPlan.name,
+           tasks: List<Task>.from(currentPlan.tasks)
+             ..[index] = Task(
+               description: task.description,
+               complete: selected ?? false,
+             ),
+         );
+       }),
+    title: TextFormField(
+      initialValue: task.description,
+      onChanged: (text) {
+        Plan currentPlan = planNotifier.value;
+        planNotifier.value = Plan(
+          name: currentPlan.name,
+          tasks: List<Task>.from(currentPlan.tasks)
+            ..[index] = Task(
+              description: text,
+              complete: task.complete,
+            ),
+        );
+      },
+    ),
+  );
+}
+```
+
+7. Edit \_buildList
+
+```dart
+Widget _buildList(Plan plan) {
+   return ListView.builder(
+     controller: scrollController,
+     itemCount: plan.tasks.length,
+     itemBuilder: (context, index) =>
+        _buildTaskTile(plan.tasks[index], index, context),
+   );
+}
+```
+
+8. Tambah widget SafeArea<br>
+   Terakhir, tambahkan widget SafeArea dengan berisi completenessMessage pada akhir widget Column. Perhatikan kode berikut ini.
+
+```dart
+ return Scaffold(
+     appBar: AppBar(title: const Text('Master Plan')),
+     body: ValueListenableBuilder<Plan>(
+       valueListenable: PlanProvider.of(context),
+       builder: (context, plan, child) {
+         return Column(
+           children: [
+             Expanded(child: _buildList(plan)),
+             SafeArea(child: Text(plan.completenessMessage))
+           ],
+         );
+       },
+     ),
+     floatingActionButton: _buildAddTaskButton(),
+   );
+```
+
+# Tugas Praktikum 2
+
+2. Jelaskan mana yang dimaksud InheritedWidget pada langkah 1 tersebut! Mengapa yang digunakan InheritedNotifier?
+   <br> Jawaban :Inhertied Widget Digunakan untuk menyediakan data, sehingga data bisa di akses ke widget child.<br>Inherited Notifiee Digunakan untuk me- listen sebuah objek yang ketika objek itu berubah maka, akan melakukan rebuild widget sehingga data sesuai.
+3. Jelaskan maksud dari method di langkah 3 pada praktikum tersebut! Mengapa dilakukan demikian?
+
+4. Lakukan capture hasil dari Langkah 9 berupa GIF, kemudian jelaskan apa yang telah Anda buat!
+   ![alt text](img/gif2.gif)
+
+# Praktikum 3
+
+1. Edit PlanProvider
+
+```dart
+class PlanProvider extends
+InheritedNotifier<ValueNotifier<List<Plan>>> {
+  const PlanProvider({super.key, required Widget child, required
+ValueNotifier<List<Plan>> notifier})
+     : super(child: child, notifier: notifier);
+
+  static ValueNotifier<List<Plan>> of(BuildContext context) {
+    return context.
+dependOnInheritedWidgetOfExactType<PlanProvider>()!.notifier!;
+  }
+}
+```
+
+2. Edit main.dart
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return PlanProvider(
+    notifier: ValueNotifier<List<Plan>>(const []),
+    child: MaterialApp(
+      title: 'State management app',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const PlanScreen(),
+    ),
+  );
+}
+```
+
+3.  Edit plan_screen.dart
+
+```dart
+final Plan plan;
+const PlanScreen({super.key, required this.plan});
+```
+
+4.  Error
+    <br> Itu akan terjadi error setiap kali memanggil PlanProvider.of(context). Itu terjadi karena screen saat ini hanya menerima tugas-tugas untuk satu kelompok Plan, tapi sekarang PlanProvider menjadi list dari objek plan tersebut.
+5.  Tambah getter Plan
+
+```dart
+class _PlanScreenState extends State<PlanScreen> {
+  late ScrollController scrollController;
+  Plan get plan => widget.plan;}
+```
+
+6. Method initState()
+
+```dart
+@override
+void initState() {
+   super.initState();
+   scrollController = ScrollController()
+    ..addListener(() {
+      FocusScope.of(context).requestFocus(FocusNode());
+    });
+}
+```
+
+7. Widget build
+
+```dart
+  @override
+  Widget build(BuildContext context) {
+    ValueNotifier<List<Plan>> plansNotifier = PlanProvider.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(_plan.name)),
+      body: ValueListenableBuilder<List<Plan>>(
+        valueListenable: plansNotifier,
+        builder: (context, plans, child) {
+          Plan currentPlan = plans.firstWhere((p) => p.name == plan.
+name);
+          return Column(
+            children: [
+              Expanded(child: _buildList(currentPlan)),
+              SafeArea(child: Text(currentPlan.
+completenessMessage)),
+            ],);},),
+      floatingActionButton: _buildAddTaskButton(context,)
+  ,);
+ }
+
+  Widget _buildAddTaskButton(BuildContext context) {
+    ValueNotifier<List<Plan>> planNotifier = PlanProvider.
+of(context);
+    return FloatingActionButton(
+      child: const Icon(Icons.add),
+      onPressed: () {
+        Plan currentPlan = plan;
+        int planIndex =
+            planNotifier.value.indexWhere((p) => p.name == currentPlan.name);
+        List<Task> updatedTasks = List<Task>.from(currentPlan.tasks)
+          ..add(const Task());
+        planNotifier.value = List<Plan>.from(planNotifier.value)
+          ..[planIndex] = Plan(
+            name: currentPlan.name,
+            tasks: updatedTasks,
+          );
+        plan = Plan(
+          name: currentPlan.name,
+          tasks: updatedTasks,
+        );},);
+  }
+```
+
+8. Edit \_buildTaskTile
+
+```dart
+ Widget _buildTaskTile(Task task, int index, BuildContext context)
+{
+    ValueNotifier<List<Plan>> planNotifier = PlanProvider.
+of(context);
+
+    return ListTile(
+      leading: Checkbox(
+         value: task.complete,
+         onChanged: (selected) {
+           Plan currentPlan = plan;
+           int planIndex = planNotifier.value
+              .indexWhere((p) => p.name == currentPlan.name);
+           planNotifier.value = List<Plan>.from(planNotifier.value)
+             ..[planIndex] = Plan(
+               name: currentPlan.name,
+               tasks: List<Task>.from(currentPlan.tasks)
+                 ..[index] = Task(
+                   description: task.description,
+                   complete: selected ?? false,
+                 ),);
+         }),
+      title: TextFormField(
+        initialValue: task.description,
+        onChanged: (text) {
+          Plan currentPlan = plan;
+          int planIndex =
+             planNotifier.value.indexWhere((p) => p.name ==
+currentPlan.name);
+          planNotifier.value = List<Plan>.from(planNotifier.value)
+            ..[planIndex] = Plan(
+              name: currentPlan.name,
+              tasks: List<Task>.from(currentPlan.tasks)
+                ..[index] = Task(
+                  description: text,
+                  complete: task.complete,
+                ),
+            );
+},),);}
+```
+
+9. Buat screen baru
+
+```dart
+home: const PlanCreatorScreen(),
+```
+
+10. Pindah ke class \_PlanCreatorScreenState
+
+```dart
+final textController = TextEditingController();
+
+@override
+void dispose() {
+  textController.dispose();
+  super.dispose();
+}
+```
+
+11. Pindah ke method build
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    // ganti ‘Namaku' dengan nama panggilan Anda
+    appBar: AppBar(title: const Text('Master Plans Namaku')),
+    body: Column(children: [
+      _buildListCreator(),
+      Expanded(child: _buildMasterPlans())
+    ]),
+  );
+}
+```
+
+12. Buat widget \_buildListCreator
+
+```dart
+Widget _buildListCreator() {
+  return Padding(
+     padding: const EdgeInsets.all(20.0),
+     child: Material(
+       color: Theme.of(context).cardColor,
+       elevation: 10,
+       child: TextField(
+          controller: textController,
+          decoration: const InputDecoration(
+             labelText: 'Add a plan',
+             contentPadding: EdgeInsets.all(20)),
+          onEditingComplete: addPlan),
+     ));
+}
+```
+
+13. Buat void addPlan()
+
+```dart
+void addPlan() {
+  final text = textController.text;
+    if (text.isEmpty) {
+      return;
+    }
+    final plan = Plan(name: text, tasks: []);
+    ValueNotifier<List<Plan>> planNotifier =
+PlanProvider.of(context);
+    planNotifier.value = List<Plan>.from(planNotifier.value)..
+add(plan);
+    textController.clear();
+    FocusScope.of(context).requestFocus(FocusNode());
+    setState(() {});
+}
+```
+
+14. Buat widget \_buildMasterPlans()
+
+```dart
+Widget _buildMasterPlans() {
+  ValueNotifier<List<Plan>> planNotifier = PlanProvider.of(context);
+    List<Plan> plans = planNotifier.value;
+
+    if (plans.isEmpty) {
+      return Column(
+         mainAxisAlignment: MainAxisAlignment.center,
+         children: <Widget>[
+           const Icon(Icons.note, size: 100, color: Colors.grey),
+           Text('Anda belum memiliki rencana apapun.',
+              style: Theme.of(context).textTheme.headlineSmall)
+         ]);
+    }
+    return ListView.builder(
+        itemCount: plans.length,
+        itemBuilder: (context, index) {
+          final plan = plans[index];
+          return ListTile(
+              title: Text(plan.name),
+              subtitle: Text(plan.completenessMessage),
+              onTap: () {
+                Navigator.of(context).push(
+                   MaterialPageRoute(builder: (_) =>
+PlanScreen(plan: plan,)));
+              });
+        });
+}
+```
+
+# Tugas Praktikum 3
+
+1. Selesaikan langkah-langkah praktikum tersebut, lalu dokumentasikan berupa GIF hasil
+   ![alt text](img/gif3.gif)
+2. Berdasarkan Praktikum 3 yang telah Anda lakukan, jelaskan maksud dari gambar diagram berikut ini!<br>
+   Di sebelah kiri, struktur aplikasi dimulai dari MaterialApp, kemudian PlanProvider, PlanCreatorScreen, Column, TextField, Expanded, dan ListView. Di sebelah kanan, struktur aplikasi dimulai dari MaterialApp, kemudian PlanScreen, Scaffold, Column, Expanded, SafeArea, ListView, dan Text. Terdapat panah di tengah dengan label "Navigator Push" yang menunjukkan transisi dari struktur di sebelah kiri ke struktur di sebelah kanan. Gambar ini relevan untuk menunjukkan bagaimana struktur aplikasi Flutter dapat berubah atau diatur ulang menggunakan Navigator Push

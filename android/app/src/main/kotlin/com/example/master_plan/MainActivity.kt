@@ -1,4 +1,4 @@
-package com.example.kamera_flutter
+package com.example.master_plan
 
 import io.flutter.embedding.android.FlutterActivity
 
