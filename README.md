@@ -1,624 +1,612 @@
 # Praktikum 1
 
-1. Membuat model task.dart<br>
-   Class ini memiliki atribut description dengan tipe data String dan complete dengan tipe data Boolean, serta ada konstruktor. Kelas ini akan menyimpan data tugas untuk aplikasi kita. Tambahkan kode berikut:
+1. Tambahkan dependensi http
 
 ```dart
-class Task {
- final String description;
- final bool complete;
+flutter pub add http
+```
 
- const Task({
-   this.complete = false,
-   this.description = '',
- });
+Cek file pubspec.yaml
+
+```dart
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.1.0
+```
+
+2. Buka file main.dart<br>
+   Ketiklah kode seperti berikut ini.
+
+```dart
+void main() {
+  runApp(const MyApp());
 }
-```
 
-2.  Buat file plan.dart<br>
-    Kita juga perlu sebuah List untuk menyimpan daftar rencana dalam aplikasi to-do ini. Buat file plan.dart di dalam folder models
-
-```dart
-import './task.dart';
-
-class Plan {
- final String name;
- final List<Task> tasks;
-
- const Plan({this.name = '', this.tasks = const []});
-}
-```
-
-3.  Buat file data_layer.dart<br>
-    Kita dapat membungkus beberapa data layer ke dalam sebuah file yang nanti akan mengekspor kedua model tersebut. Dengan begitu, proses impor akan lebih ringkas seiring berkembangnya aplikasi. Buat file bernama data_layer.dart
-
-```dart
-export 'plan.dart';
-export 'task.dart';
-```
-
-4. Pindah ke file main.dart<br>
-   Ubah isi kode main.dart sebagai berikut.
-
-```dart
-import 'package:flutter/material.dart';
-import './views/plan_screen.dart';
-
-void main() => runApp(MasterPlanApp());
-
-class MasterPlanApp extends StatelessWidget {
-  const MasterPlanApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-     theme: ThemeData(primarySwatch: Colors.purple),
-     home: PlanScreen(),
+      title: 'Future Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const FuturePage(),
     );
   }
 }
-```
 
-5. buat plan_screen.dart<br>
-   Pada folder views, buatlah sebuah file plan_screen.dart dan gunakan templat StatefulWidget untuk membuat class PlanScreen
-
-```dart
-import '../models/data_layer.dart';
-import 'package:flutter/material.dart';
-
-class PlanScreen extends StatefulWidget {
-  const PlanScreen({super.key});
+class FuturePage extends StatefulWidget {
+  const FuturePage({super.key});
 
   @override
-  State createState() => _PlanScreenState();
+  State<FuturePage> createState() => _FuturePageState();
 }
 
-class _PlanScreenState extends State<PlanScreen> {
-  Plan plan = const Plan();
+class _FuturePageState extends State<FuturePage> {
+  String result = "";
 
   @override
   Widget build(BuildContext context) {
-   return Scaffold(
-    // ganti ‘Namaku' dengan Nama panggilan Anda
-    appBar: AppBar(title: const Text('Master Plan Namaku')),
-    body: _buildList(),
-    floatingActionButton: _buildAddTaskButton(),
-   );
-  }
-}
-```
-
-6.  buat method \_buildAddTaskButton()<br>
-    Anda akan melihat beberapa error di langkah 6, karena method yang belum dibuat. Ayo kita buat mulai dari yang paling mudah yaitu tombol Tambah Rencana. Tambah kode berikut di bawah method build di dalam class \_PlanScreenState.
-
-```dart
-Widget _buildAddTaskButton() {
-  return FloatingActionButton(
-   child: const Icon(Icons.add),
-   onPressed: () {
-     setState(() {
-      plan = Plan(
-       name: plan.name,
-       tasks: List<Task>.from(plan.tasks)
-       ..add(const Task()),
-     );
-    });
-   },
-  );
-}
-```
-
-7. buat widget \_buildList() <br>
-   Kita akan buat widget berupa List yang dapat dilakukan scroll, yaitu ListView.builder. Buat widget ListView seperti kode berikut ini.
-
-```dart
-Widget _buildList() {
-  return ListView.builder(
-   itemCount: plan.tasks.length,
-   itemBuilder: (context, index) =>
-   _buildTaskTile(plan.tasks[index], index),
-  );
-}
-```
-
-8.  buat widget \_buildTaskTile<br>
-    Dari langkah 8, kita butuh ListTile untuk menampilkan setiap nilai dari plan.tasks. Kita buat dinamis untuk setiap index data, sehingga membuat view menjadi lebih mudah
-
-```dart
- Widget _buildTaskTile(Task task, int index) {
-    return ListTile(
-      leading: Checkbox(
-          value: task.complete,
-          onChanged: (selected) {
-            setState(() {
-              plan = Plan(
-                name: plan.name,
-                tasks: List<Task>.from(plan.tasks)
-                  ..[index] = Task(
-                    description: task.description,
-                    complete: selected ?? false,
-                  ),
-              );
-            });
-          }),
-      title: TextFormField(
-        initialValue: task.description,
-        onChanged: (text) {
-          setState(() {
-            plan = Plan(
-              name: plan.name,
-              tasks: List<Task>.from(plan.tasks)
-                ..[index] = Task(
-                  description: text,
-                  complete: task.complete,
-                ),
-            );
-          });
-        },
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Febrio Future Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Spacer(),
+            ElevatedButton(
+              child: const Text('GO!'),
+              onPressed: () {
+                setState(() {});
+                getData().then((value) {
+                  result = value.body.toString().substring(0, 450);
+                  setState(() {});
+                }).catchError((_) {
+                  result = 'An error occurred';
+                  setState(() {});
+                });
+              },
+            ),
+            const Spacer(),
+            Text(result),
+            const Spacer(),
+            const CircularProgressIndicator(),
+            const Spacer(),
+          ],
+        ),
       ),
     );
+  }}
+```
+
+3.  Tambah method getData()<br>
+    Tambahkan method ini ke dalam class \_FuturePageState yang berguna untuk mengambil data dari API Google Books.
+
+```dart
+Future<http.Response> getData() async {
+    const authority = 'www.googleapis.com';
+    const path = '/books/v1/volumes/AuIxEAAAQBAJ';
+    Uri url = Uri.https(authority, path);
+    return http.get(url);
   }
 ```
 
-9. Tambah Scroll Controller<br>
-   Anda dapat menggunakan ScrollController untuk menghapus focus dari semua TextField selama event scroll dilakukan. Pada file plan_screen.dart, tambahkan variabel scroll controller di class State tepat setelah variabel plan
+- Carilah judul buku favorit Anda di Google Books, lalu ganti ID buku pada variabel path di kode tersebut. Caranya ambil di URL browser Anda seperti gambar berikut ini.
+  ![alt text](img/image.png)
+- Kemudian cobalah akses di browser URI tersebut dengan lengkap seperti ini. Jika menampilkan data JSON, maka Anda telah berhasil. Lakukan capture milik Anda dan tulis di README
+  ![alt text](img/1.png)
+
+4. Tambah kode di ElevatedButton<br>
+   Tambahkan kode pada onPressed di ElevatedButton seperti berikut.
 
 ```dart
-late ScrollController scrollController;
+ ElevatedButton(
+              child: const Text('GO!'),
+              onPressed: () {
+                setState(() {});
+                getData().then((value) {
+                  result = value.body.toString().substring(0, 450);
+                  setState(() {});
+                }).catchError((_) {
+                  result = 'An error occurred';
+                  setState(() {});
+                });
+              },
+            ),
 ```
 
-10. Tambah Scroll Listener<br>
-    Tambahkan method initState() setelah deklarasi variabel scrollController seperti kode berikut.
+- Jelaskan maksud kode langkah 5 tersebut terkait substring dan catchError!<br>
+  Jawaban : Kode ini kemudian menggunakan substring(0, 450) untuk mengambil hanya 450 karakter pertama dari respons sebagai string, yang akan ditampilkan di layar aplikasi. Ini bertujuan untuk membatasi jumlah teks yang ditampilkan, sehingga hanya bagian awal data yang terlihat.
+  <br><br>Namun, jika terjadi kesalahan selama proses permintaan data, seperti masalah jaringan atau respons yang tidak valid, fungsi catchError akan menangani kesalahan ini. Dalam hal ini, variabel result diubah menjadi teks "An error occurred", menunjukkan kepada pengguna bahwa ada kendala dalam pengambilan data. setState dipanggil untuk memperbarui UI setiap kali result berubah, baik dari hasil respons maupun pesan error.
 
-```dart
-@override
-void initState() {
-  super.initState();
-  scrollController = ScrollController()
-    ..addListener(() {
-      FocusScope.of(context).requestFocus(FocusNode());
-    });
-}
-```
-
-11. Tambah controller dan keyboard behavior
-
-```dart
-return ListView.builder(
-  controller: scrollController,
- keyboardDismissBehavior: Theme.of(context).platform ==
- TargetPlatform.iOS
-          ? ScrollViewKeyboardDismissBehavior.onDrag
-          : ScrollViewKeyboardDismissBehavior.manual,
-```
-
-12. Terakhir, tambah method dispose()
-    ![alt text](img\image.png)
-
-# Tugas Praktikum 1
-
-2. Jelaskan maksud dari langkah 4 pada praktikum tersebut! Mengapa dilakukan demikian<br>
-   Jawaban : Untuk melakukan eksport pada models, sehingga proses import hanya dilakukan sekali pada views
-3. Mengapa perlu variabel plan di langkah 6 pada praktikum tersebut? Mengapa dibuat konstanta ?<br>
-   Jawaban : Agar objek tidak dapat diubah lagi setelah pendeklarasian objek, sehingga pada tahap2 selanjutnya proses menjadi duplikasi objek baru.
-4. Lakukan capture hasil dari Langkah 9 berupa GIF, kemudian jelaskan apa yang telah Anda buat!
-   <br>
-   ![alt text](<img/Android Emulator - Pixel_6a_API_35_5554 2024-11-09 21-41-06.gif>)
-   <br> Jawaban : membentuk sebuah listile yang didasarkan pada jumlah task pada plan, pada set state checkbox apa bila terjadi perubahan checkbox maka variabel pada task boolean menjadi true atau false. semua perubahan akan terjadi pada variabel plan, sehinga terjadi perubahan secara terus menerus pada variabel plan
-5. Apa kegunaan method pada Langkah 11 dan 13 dalam lifecyle state ?<br> Jawaban :
-   ScrollListener digunakan apabila, tampilan melebihi batasan device maka akan dilakukan listener pada scroll seperti fokus.
+![alt text](img/2.png)
 
 # Praktikum 2
 
-1.  Buat file plan_provider.dart
+1. Buka file main.dart <br>
+   Tambahkan tiga method berisi kode seperti berikut di dalam class \_FuturePageState.
 
 ```dart
-import 'package:flutter/material.dart';
-import '../models/data_layer.dart';
+Future<int> returnOneAsync() async {
+  await Future.delayed(const Duration(seconds: 3));
+  return 1;
+}
 
-class PlanProvider extends InheritedNotifier<ValueNotifier<Plan>> {
-  const PlanProvider({super.key, required Widget child, required
-   ValueNotifier<Plan> notifier})
-  : super(child: child, notifier: notifier);
+Future<int> returnTwoAsync() async {
+  await Future.delayed(const Duration(seconds: 3));
+  return 2;
+}
 
-  static ValueNotifier<Plan> of(BuildContext context) {
-   return context.
-    dependOnInheritedWidgetOfExactType<PlanProvider>()!.notifier!;
-  }
+Future<int> returnThreeAsync() async {
+  await Future.delayed(const Duration(seconds: 3));
+  return 3;
 }
 ```
 
-2. Edit main.dart<br>
-   Gantilah pada bagian atribut home dengan PlanProvider
+2. Tambah method count()<br>
+   Lalu tambahkan lagi method ini di bawah ketiga method sebelumnya.
 
 ```dart
-return MaterialApp(
-  theme: ThemeData(primarySwatch: Colors.purple),
-  home: PlanProvider(
-    notifier: ValueNotifier<Plan>(const Plan()),
-    child: const PlanScreen(),
-   ),
-);
-```
-
-3. Tambah method pada model plan.dart
-   <br>Tambahkan dua method di dalam model class Plan
-
-```dart
-int get completedCount => tasks
-  .where((task) => task.complete)
-  .length;
-
-String get completenessMessage =>
-  '$completedCount out of ${tasks.length} tasks';
-```
-
-4.  Pindah ke PlanScreen
-    <br> Edit PlanScreen agar menggunakan data dari PlanProvider. Hapus deklarasi variabel plan (ini akan membuat error). Kita akan perbaiki pada langkah 5 berikut ini.
-
-5.  Edit method \_buildAddTaskButton
-
-```dart
-Widget _buildAddTaskButton() {
-    return FloatingActionButton(
-      child: const Icon(Icons.add),
-      onPressed: () {
-        setState(() {
-          Plan currentPlan = plantNotifier.value;
-          plantNotifier.value = Plan(
-            name: currentPlan.name,
-            tasks: List<Task>.from(currentPlan.tasks)
-              ..add(const Task(description: '', complete: false)),
-          );
-        });
-      },
-    );
+  Future count() async {
+    int total = 0;
+    total = await returnOneAsync();
+    total += await returnTwoAsync();
+    total += await returnThreeAsync();
+    setState(() {
+      result = total.toString();
+    });
   }
 ```
-
-6. Edit method \_buildTaskTile
-
+3. Panggil count()<br>
+Lakukan comment kode sebelumnya, ubah isi kode onPressed() menjadi seperti berikut.
 ```dart
-Widget _buildTaskTile(Task task, int index, BuildContext context) {
-  ValueNotifier<Plan> planNotifier = PlanProvider.of(context);
-  return ListTile(
-    leading: Checkbox(
-       value: task.complete,
-       onChanged: (selected) {
-         Plan currentPlan = planNotifier.value;
-         planNotifier.value = Plan(
-           name: currentPlan.name,
-           tasks: List<Task>.from(currentPlan.tasks)
-             ..[index] = Task(
-               description: task.description,
-               complete: selected ?? false,
-             ),
-         );
-       }),
-    title: TextFormField(
-      initialValue: task.description,
-      onChanged: (text) {
-        Plan currentPlan = planNotifier.value;
-        planNotifier.value = Plan(
-          name: currentPlan.name,
-          tasks: List<Task>.from(currentPlan.tasks)
-            ..[index] = Task(
-              description: text,
-              complete: task.complete,
+            ElevatedButton(
+              child: const Text('GO!'),
+              onPressed: () {
+                count();
+              },
             ),
-        );
-      },
-    ),
-  );
-}
 ```
-
-7. Edit \_buildList
-
-```dart
-Widget _buildList(Plan plan) {
-   return ListView.builder(
-     controller: scrollController,
-     itemCount: plan.tasks.length,
-     itemBuilder: (context, index) =>
-        _buildTaskTile(plan.tasks[index], index, context),
-   );
-}
-```
-
-8. Tambah widget SafeArea<br>
-   Terakhir, tambahkan widget SafeArea dengan berisi completenessMessage pada akhir widget Column. Perhatikan kode berikut ini.
-
-```dart
- return Scaffold(
-     appBar: AppBar(title: const Text('Master Plan')),
-     body: ValueListenableBuilder<Plan>(
-       valueListenable: PlanProvider.of(context),
-       builder: (context, plan, child) {
-         return Column(
-           children: [
-             Expanded(child: _buildList(plan)),
-             SafeArea(child: Text(plan.completenessMessage))
-           ],
-         );
-       },
-     ),
-     floatingActionButton: _buildAddTaskButton(),
-   );
-```
-
-# Tugas Praktikum 2
-
-2. Jelaskan mana yang dimaksud InheritedWidget pada langkah 1 tersebut! Mengapa yang digunakan InheritedNotifier?
-   <br> Jawaban :Inhertied Widget Digunakan untuk menyediakan data, sehingga data bisa di akses ke widget child.<br>Inherited Notifiee Digunakan untuk me- listen sebuah objek yang ketika objek itu berubah maka, akan melakukan rebuild widget sehingga data sesuai.
-3. Jelaskan maksud dari method di langkah 3 pada praktikum tersebut! Mengapa dilakukan demikian?
-
-4. Lakukan capture hasil dari Langkah 9 berupa GIF, kemudian jelaskan apa yang telah Anda buat!
-   ![alt text](img/gif2.gif)
+![alt text](img/3.png)<br>
+Jelaskan maksud kode langkah 1 dan 2 tersebut!<br>
+kode dari langkah 1 dan adalah contoh pembuatan function async dengan memberikan delay 3 detik dan mereturn nilai int lalau pada kode langkah 2 membuat fungsi async yang menunggu dari fungsi async sebelumnya lalu menjumlahkannya dan mengatur state
 
 # Praktikum 3
-
-1. Edit PlanProvider
-
+1. Pastikan telah impor package async berikut.
 ```dart
-class PlanProvider extends
-InheritedNotifier<ValueNotifier<List<Plan>>> {
-  const PlanProvider({super.key, required Widget child, required
-ValueNotifier<List<Plan>> notifier})
-     : super(child: child, notifier: notifier);
+import 'package:async/async.dart';
+```
 
-  static ValueNotifier<List<Plan>> of(BuildContext context) {
-    return context.
-dependOnInheritedWidgetOfExactType<PlanProvider>()!.notifier!;
-  }
+2. Tambahkan variabel late dan method di class _FuturePageState seperti ini.
+```dart
+late Completer completer;
+
+Future getNumber() {
+  completer = Completer<int>();
+  calculate();
+  return completer.future;
+}
+
+Future calculate() async {
+  await Future.delayed(const Duration(seconds : 5));
+  completer.complete(42);
 }
 ```
 
-2. Edit main.dart
-
+3. Tambahkan kode berikut pada fungsi onPressed(). Kode sebelumnya bisa Anda comment.
 ```dart
-@override
-Widget build(BuildContext context) {
-  return PlanProvider(
-    notifier: ValueNotifier<List<Plan>>(const []),
-    child: MaterialApp(
-      title: 'State management app',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const PlanScreen(),
-    ),
-  );
-}
+setState(() {
+      getNumber().then((value) {
+        result = value.toString();
+        });
+       })
+```
+Terakhir, run atau tekan F5 untuk melihat hasilnya jika memang belum running. Bisa juga lakukan hot restart jika aplikasi sudah running
+![alt text](img/4.png)
+4. Gantilah isi code method calculate() seperti kode berikut, atau Anda dapat membuat calculate2()
+```dart
+  try {
+      await Future.delayed(const Duration(seconds: 5));
+      completer.complete(42);
+    } catch (_) {
+      completer.completeError({});
+    }
+```
+5.  Pindah ke onPressed() Ganti menjadi kode seperti berikut.
+```dart
+getNumber().then((value) {
+  setState(() {
+    result = value.toString();
+  });
+}).catchError((e) {
+  result = 'An error occurred';
+});
 ```
 
-3.  Edit plan_screen.dart
+Jelaskan maksud perbedaan kode langkah 2 dengan langkah 5-6 tersebut!<br>
+jawaban : Pada langkah 2 membuat sebuah variabel dengan tipe data Completer dan membuat fungsi future getNumber yang menjalankan fungsi future calculate dengan delayed 5 detik dan mereturn nilai complete 42. Dengan menggunakan completer maka bisa mereturn nilai value jika berhasil atau error jika gagal
 
+# Praktikum 4
+1. Tambahkan method ini ke dalam class _FuturePageState
 ```dart
-final Plan plan;
-const PlanScreen({super.key, required this.plan});
-```
+void returnFG() {
+    FutureGroup<int> futureGroup = FutureGroup<int>();
+    futureGroup.add(returnOneAsync());
+    futureGroup.add(returnTwoAsync());
+    futureGroup.add(returnThreeAsync());
+    futureGroup.close();
+    futureGroup.future.then((List<int> values) {
+      int total = 0;
+      for (var element in values) {
+        total += element;
+      }
 
-4.  Error
-    <br> Itu akan terjadi error setiap kali memanggil PlanProvider.of(context). Itu terjadi karena screen saat ini hanya menerima tugas-tugas untuk satu kelompok Plan, tapi sekarang PlanProvider menjadi list dari objek plan tersebut.
-5.  Tambah getter Plan
-
-```dart
-class _PlanScreenState extends State<PlanScreen> {
-  late ScrollController scrollController;
-  Plan get plan => widget.plan;}
-```
-
-6. Method initState()
-
-```dart
-@override
-void initState() {
-   super.initState();
-   scrollController = ScrollController()
-    ..addListener(() {
-      FocusScope.of(context).requestFocus(FocusNode());
+      setState(() {
+        result = total.toString();
+      });
     });
-}
+  }
 ```
-
-7. Widget build
-
+2. Edit onPressed() Anda bisa hapus atau comment kode sebelumnya, kemudian panggil method dari langkah 1 tersebut.
 ```dart
+  returnFG();
+```
+3. Run<br>
+![img/5.png](img/5.png)
+4. Anda dapat menggunakan FutureGroup dengan Future.wait seperti kode berikut.
+```dart
+final futures = Future.wait<int>([
+  returnOneAsync(),
+  returnTwoAsync(),
+  returnThreeAsync(),
+]);
+```
+Jelaskan maksud perbedaan kode langkah 1 dan 4!<br>
+jawaban : Perbedaan langkah 1 dan 4 adalah dalam menghandling beberapa future, pada langkah 1 perlu menggunakan futuregroup dengan tipe datra int dan menambahkannya seperti pada list, dan pada langkah 4 langsung seperti pendeklarasian list dengan isian dari beberapa fungsi async
+# Praktikum 5
+1. Tambahkan method ini ke dalam class _FuturePageState
+```dart
+ Future returnError() async {
+    await Future.delayed(const Duration(seconds: 2));
+    throw Exception('Something terrible happened');
+  }
+```
+2. ElevatedButton Ganti dengan kode berikut
+```dart
+ returnError().then((value) {
+    setState(() {
+      result = 'Success';
+        });
+        }).catchError((onError) {
+        setState(() {
+        result = onError.toString();
+          });
+      }).whenComplete(() => print("complete"));
+```
+3. Run Lakukan run dan klik tombol GO! maka akan menghasilkan seperti gambar berikut.
+![img/6.png](img/6.png)
+4.  Tambah method handleError() Tambahkan kode ini di dalam class _FutureStatePage
+```dart
+Future handleError() async {
+    try {
+      await returnError();
+    } catch (error) {
+      setState(() {
+        result = error.toString();
+      });
+    } finally {
+      print('complete');
+    }
+  }
+```
+Panggil method handleError() tersebut di ElevatedButton, lalu run. Apa hasilnya? Jelaskan perbedaan kode langkah 1 dan 4!<br>
+Jawaban : Perbedaan pada try catch yang di bungkus dalam sebuah fungsi atau chaining dari async
+
+# Praktikum 6
+1.  install plugin geolocator
+```
+flutter pub add geolocator
+```
+2.  Tambah permission GPS
+```
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+```
+3. Buat file geolocation.dart
+4. Buat class LocationScreen di dalam file geolocation.dart
+```dart
+class Geolocation extends StatefulWidget {
+  const Geolocation({super.key});
+
+  @override
+  State<Geolocation> createState() => _GeolocationState();
+}
+
+class _GeolocationState extends State<Geolocation> {
+  String myPosition = '';
+  @override
+  void initState() {
+    super.initState();
+    getPosition().then((Position myPods) {
+      myPosition =
+          'Latitude: ${myPods.latitude.toString()} Longitude: ${myPods.longitude.toString()}';
+      setState(() {
+        myPosition = myPosition;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    ValueNotifier<List<Plan>> plansNotifier = PlanProvider.of(context);
-
     return Scaffold(
-      appBar: AppBar(title: Text(_plan.name)),
-      body: ValueListenableBuilder<List<Plan>>(
-        valueListenable: plansNotifier,
-        builder: (context, plans, child) {
-          Plan currentPlan = plans.firstWhere((p) => p.name == plan.
-name);
-          return Column(
-            children: [
-              Expanded(child: _buildList(currentPlan)),
-              SafeArea(child: Text(currentPlan.
-completenessMessage)),
-            ],);},),
-      floatingActionButton: _buildAddTaskButton(context,)
-  ,);
- }
+      appBar: AppBar(
+        title: const Text('Current Location'),
+      ),
+      body: Center(
+        child: Text(myPosition),
+      ),
+    );
+  }
 
-  Widget _buildAddTaskButton(BuildContext context) {
-    ValueNotifier<List<Plan>> planNotifier = PlanProvider.
-of(context);
-    return FloatingActionButton(
-      child: const Icon(Icons.add),
-      onPressed: () {
-        Plan currentPlan = plan;
-        int planIndex =
-            planNotifier.value.indexWhere((p) => p.name == currentPlan.name);
-        List<Task> updatedTasks = List<Task>.from(currentPlan.tasks)
-          ..add(const Task());
-        planNotifier.value = List<Plan>.from(planNotifier.value)
-          ..[planIndex] = Plan(
-            name: currentPlan.name,
-            tasks: updatedTasks,
-          );
-        plan = Plan(
-          name: currentPlan.name,
-          tasks: updatedTasks,
-        );},);
+  Future<Position> getPosition() async {
+    await Geolocator.requestPermission();
+    await Geolocator.isLocationServiceEnabled();
+    Position? position = await Geolocator.getCurrentPosition();
+    return position;
+  }
+}
+
+```
+6.  Edit main.dart
+7. Run project Anda di device atau emulator (bukan browser), maka akan tampil seperti berikut ini.
+![alt text](img/7.png)
+
+# Praktikum 7
+1. Modifikasi method getPosition()
+```dart
+Future<Position> getPosition() async {
+    await Geolocator.isLocationServiceEnabled();
+    await Future.delayed(const Duration(seconds: 3));
+    Position? position = await Geolocator.getCurrentPosition();
+    return position;
   }
 ```
-
-8. Edit \_buildTaskTile
-
+2. Tambah variabel
 ```dart
- Widget _buildTaskTile(Task task, int index, BuildContext context)
-{
-    ValueNotifier<List<Plan>> planNotifier = PlanProvider.
-of(context);
-
-    return ListTile(
-      leading: Checkbox(
-         value: task.complete,
-         onChanged: (selected) {
-           Plan currentPlan = plan;
-           int planIndex = planNotifier.value
-              .indexWhere((p) => p.name == currentPlan.name);
-           planNotifier.value = List<Plan>.from(planNotifier.value)
-             ..[planIndex] = Plan(
-               name: currentPlan.name,
-               tasks: List<Task>.from(currentPlan.tasks)
-                 ..[index] = Task(
-                   description: task.description,
-                   complete: selected ?? false,
-                 ),);
-         }),
-      title: TextFormField(
-        initialValue: task.description,
-        onChanged: (text) {
-          Plan currentPlan = plan;
-          int planIndex =
-             planNotifier.value.indexWhere((p) => p.name ==
-currentPlan.name);
-          planNotifier.value = List<Plan>.from(planNotifier.value)
-            ..[planIndex] = Plan(
-              name: currentPlan.name,
-              tasks: List<Task>.from(currentPlan.tasks)
-                ..[index] = Task(
-                  description: text,
-                  complete: task.complete,
-                ),
-            );
-},),);}
+  Future<Position>? position;
 ```
-
-9. Buat screen baru
-
+3. Tambah initState()
 ```dart
-home: const PlanCreatorScreen(),
+ @override
+  void initState() {
+    super.initState();
+    position = getPosition();
+  }
 ```
-
-10. Pindah ke class \_PlanCreatorScreenState
-
+4. Edit method build()
 ```dart
-final textController = TextEditingController();
-
-@override
-void dispose() {
-  textController.dispose();
-  super.dispose();
+return Scaffold(
+        appBar: AppBar(
+          title: const Text('Current Location'),
+        ),
+        body: Center(
+          child: FutureBuilder(
+              future: position,
+              builder:
+                  (BuildContext context, AsyncSnapshot<Position> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  }
+                  Position pos = snapshot.data!;
+                  return Text(
+                    'Latitude: ${pos.latitude.toStringAsFixed(4)}\nLongitude: ${pos.longitude.toStringAsFixed(4)}',
+                    textAlign: TextAlign.center,
+                  );
+                } else {
+                  return const Text('Error');
+                }
+              }),
+        ));
+```
+5. Tambah handling error
+```dart
+else if (snapshot.connectionState == ConnectionState.done) {
+  if (snapshot.hasError) {
+     return Text('Something terrible happened!');
+  }
+  return Text(snapshot.data.toString());
 }
 ```
+![alt text](img/8.png)
 
-11. Pindah ke method build
+Apakah ada perbedaan UI dengan praktikum sebelumnya? Mengapa demikian?<br>
+Jawaban : Tidak ada perbedaan dengan UI sebelumnya, hanya saja handling pada data masih di proses dan sudah memiliki perbedaan dan juga terdapat handling bila error<br><br>
+Apakah ada perbedaan UI dengan langkah sebelumnya? Mengapa demikian?<br>
+jawaban :Tidak ada perbedaan dengan UI sebelumnya,namun jika terjadi error saat process data maka akan menghasilkan text berbeda
 
+# Praktikum 8
+1. Buat file baru navigation_first.dart
+
+2. Isi kode navigation_first.dart
 ```dart
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    // ganti ‘Namaku' dengan nama panggilan Anda
-    appBar: AppBar(title: const Text('Master Plans Namaku')),
-    body: Column(children: [
-      _buildListCreator(),
-      Expanded(child: _buildMasterPlans())
-    ]),
-  );
+class NavigationFirts extends StatefulWidget {
+  const NavigationFirts({super.key});
+
+  @override
+  State<NavigationFirts> createState() => _NavigationFirtsState();
+}
+
+class _NavigationFirtsState extends State<NavigationFirts> {
+  Color color = Colors.blue.shade700;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: color,
+      appBar: AppBar(
+        title: const Text('Navigation First'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            _navigateAndGetColor(context);
+          },
+          child: const Text('Change Color')
+        ),
+      ),
+    );
+  }
 }
 ```
-
-12. Buat widget \_buildListCreator
-
+3. Tambah method di class _NavigationFirstState
 ```dart
-Widget _buildListCreator() {
-  return Padding(
-     padding: const EdgeInsets.all(20.0),
-     child: Material(
-       color: Theme.of(context).cardColor,
-       elevation: 10,
-       child: TextField(
-          controller: textController,
-          decoration: const InputDecoration(
-             labelText: 'Add a plan',
-             contentPadding: EdgeInsets.all(20)),
-          onEditingComplete: addPlan),
-     ));
+Future _navigateAndGetColor(BuildContext context) async {
+   color = await Navigator.push(context,
+        MaterialPageRoute(builder: (context) => const NavigationSecond()),) ?? Colors.blue;
+   setState(() {});
+   });
 }
 ```
-
-13. Buat void addPlan()
-
+4. Buat file baru navigation_second.dart
+5. Buat class NavigationSecond dengan StatefulWidget
 ```dart
-void addPlan() {
-  final text = textController.text;
-    if (text.isEmpty) {
-      return;
-    }
-    final plan = Plan(name: text, tasks: []);
-    ValueNotifier<List<Plan>> planNotifier =
-PlanProvider.of(context);
-    planNotifier.value = List<Plan>.from(planNotifier.value)..
-add(plan);
-    textController.clear();
-    FocusScope.of(context).requestFocus(FocusNode());
-    setState(() {});
+class NavigationSecond extends StatefulWidget {
+  const NavigationSecond({super.key});
+
+  @override
+  State<NavigationSecond> createState() => _NavigationSecondState();
+}
+
+class _NavigationSecondState extends State<NavigationSecond> {
+  @override
+  Widget build(BuildContext context) {
+    Color color;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Navigation Second Screen"),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  color = Colors.red.shade700;
+                  Navigator.pop(context, color);
+                },
+                child: const Text('red')),
+            ElevatedButton(
+                onPressed: () {
+                  color = Colors.green.shade700;
+                  Navigator.pop(context, color);
+                },
+                child: const Text('green')),
+            ElevatedButton(
+                onPressed: () {
+                  color = Colors.blue.shade700;
+                  Navigator.pop(context, color);
+                },
+                child: const Text('Blue')),
+          ],
+        ),
+      ),
+    );
+  }
 }
 ```
+6.  Edit main.dart
+```
+ home: const NavigationFirts(),
+```
+![alt text](<img/Android Emulator - Pixel_6_API_34_5554 2024-11-27 16-40-50.gif>)
 
-14. Buat widget \_buildMasterPlans()
+Cobalah klik setiap button, apa yang terjadi ? Mengapa demikian ?<br>
+Ketika tombol "Change Color" di layar pertama ditekan, aplikasi akan menampilkan layar kedua yang berisi tiga tombol warna (merah, hijau, biru). Setiap tombol di layar kedua ketika ditekan akan mengirimkan data warna menggunakan Navigator.pop(context, color) kembali ke layar pertama, dimana data warna tersebut akan ditangkap oleh fungsi _navigateAndGetColor yang async dan menggunakan setState untuk memperbarui warna latar belakang layar pertama sesuai dengan warna yang dipilih. Jika tidak ada warna yang dipilih (pengguna langsung kembali), warna default biru akan digunakan.
 
+# Praktikum 9 
+1.  Buat file baru navigation_dialog.dart
+2.  Isi kode navigation_dialog.dart
 ```dart
-Widget _buildMasterPlans() {
-  ValueNotifier<List<Plan>> planNotifier = PlanProvider.of(context);
-    List<Plan> plans = planNotifier.value;
+class NavigationDialog extends StatefulWidget {
+  const NavigationDialog({super.key});
 
-    if (plans.isEmpty) {
-      return Column(
-         mainAxisAlignment: MainAxisAlignment.center,
-         children: <Widget>[
-           const Icon(Icons.note, size: 100, color: Colors.grey),
-           Text('Anda belum memiliki rencana apapun.',
-              style: Theme.of(context).textTheme.headlineSmall)
-         ]);
-    }
-    return ListView.builder(
-        itemCount: plans.length,
-        itemBuilder: (context, index) {
-          final plan = plans[index];
-          return ListTile(
-              title: Text(plan.name),
-              subtitle: Text(plan.completenessMessage),
-              onTap: () {
-                Navigator.of(context).push(
-                   MaterialPageRoute(builder: (_) =>
-PlanScreen(plan: plan,)));
-              });
+  @override
+  State<NavigationDialog> createState() => _NavigationDialogState();
+}
+
+class _NavigationDialogState extends State<NavigationDialog> {
+  Color color = Colors.blue.shade700;
+   @override
+  Widget build(BuildContext context) {
+    print(color);
+    return Scaffold(
+      backgroundColor: color,
+      appBar: AppBar(
+        title: const Text('Navigation Dialog Screen'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+            onPressed: () {
+              _showColorDialog(context);
+            },
+            child: const Text('Change Color')),
+      ),
+    );
+  }
+}
+```
+3. Tambah method async
+```dart
+
+  _showColorDialog(BuildContext context) async {
+    await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) {
+          return AlertDialog(
+            title: const Text("Very important question"),
+            content: const Text('Please choose a color'),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: () {
+                    color = Colors.red.shade700;
+                    Navigator.pop(context, color);
+                  },
+                  child: Text('Red')),
+              TextButton(
+                  onPressed: () {
+                    color = Colors.green.shade700;
+                    Navigator.pop(context, color);
+                  },
+                  child: Text('green')),
+              TextButton(
+                  onPressed: () {
+                    color = Colors.blue.shade700;
+                    Navigator.pop(context, color);
+                  },
+                  child: Text('blue'))
+            ],
+          );
         });
-}
+
+    setState(() {});
+  }
 ```
+4. Panggil method di ElevatedButton
+5. Edit main.dart
+```
+     home: const NavigationDialog(),
+```
+![alt text](<img/Android Emulator - Pixel_6_API_34_5554 2024-11-27 16-40-50 (1).gif>)
 
-# Tugas Praktikum 3
-
-1. Selesaikan langkah-langkah praktikum tersebut, lalu dokumentasikan berupa GIF hasil
-   ![alt text](img/gif3.gif)
-2. Berdasarkan Praktikum 3 yang telah Anda lakukan, jelaskan maksud dari gambar diagram berikut ini!<br>
-   Di sebelah kiri, struktur aplikasi dimulai dari MaterialApp, kemudian PlanProvider, PlanCreatorScreen, Column, TextField, Expanded, dan ListView. Di sebelah kanan, struktur aplikasi dimulai dari MaterialApp, kemudian PlanScreen, Scaffold, Column, Expanded, SafeArea, ListView, dan Text. Terdapat panah di tengah dengan label "Navigator Push" yang menunjukkan transisi dari struktur di sebelah kiri ke struktur di sebelah kanan. Gambar ini relevan untuk menunjukkan bagaimana struktur aplikasi Flutter dapat berubah atau diatur ulang menggunakan Navigator Push
+Cobalah klik setiap button, apa yang terjadi ? Mengapa demikian ?<br  >
+Jawaban : Pada kode tersebut, terdapat beberapa fungsi yang diimplementasikan dengan button yang berbeda. Di `lib/main.dart`, button "GO!" memiliki beberapa fungsi yang dikomentari (tidak aktif) dan satu fungsi aktif yaitu `handleError()` yang akan menampilkan pesan error setelah delay 2 detik. Sedangkan di `lib/navigation_dialog.dart`, terdapat button "Change Color" yang ketika diklik akan memunculkan dialog dengan 3 pilihan warna (merah, hijau, biru) - ketika salah satu warna dipilih, background color dari Scaffold akan berubah sesuai dengan warna yang dipilih karena adanya `setState()` yang memperbarui variable `color`. Dialog ini tidak bisa ditutup dengan mengklik area di luar dialog karena property `barrierDismissible` diset `false`, sehingga user harus memilih salah satu warna untuk menutup dialog tersebut.

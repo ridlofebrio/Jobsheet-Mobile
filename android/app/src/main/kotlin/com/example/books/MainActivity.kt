@@ -1,4 +1,4 @@
-package com.example.master_plan
+package com.example.books
 
 import io.flutter.embedding.android.FlutterActivity
 

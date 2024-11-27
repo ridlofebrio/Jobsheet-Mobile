@@ -1,6 +1,6 @@
 {
-    "name": "master_plan",
-    "short_name": "master_plan",
+    "name": "books",
+    "short_name": "books",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
